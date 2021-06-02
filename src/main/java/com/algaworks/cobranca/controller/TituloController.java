@@ -1,7 +1,11 @@
 package com.algaworks.cobranca.controller;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -22,7 +26,9 @@ public class TituloController {
 	public ModelAndView novo() {
 		ModelAndView mv = new ModelAndView("CadastroTitulo");
 		//StatusTitulo.values() retorna um Array com os elementos do Enum StatusTitulo
-		mv.addObject("todosStatusTitulo",StatusTitulo.values());
+		// mv.addObject("todosStatusTitulo",StatusTitulo.values()); Refatoramos criando uma lista. 
+		// todosStatusTitulo nome do objeto que vai ser interado na viwer
+		// StatusTitulo.values() valores.
 		return mv;
 	}
 	
@@ -45,6 +51,9 @@ public class TituloController {
 	//	return "CadastroTitulo"; // pagina que eu quero retornar
 	// }
 	
-
+	@ModelAttribute("todosStatusTitulo")
+	public List<StatusTitulo> todosStatusTitulo(){
+		return Arrays.asList(StatusTitulo.values());
+	}
 
 }
