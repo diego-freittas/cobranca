@@ -9,6 +9,9 @@ import javax.persistence.*;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.format.annotation.NumberFormat;
+
 import java.util.Date;
 
 
@@ -22,14 +25,23 @@ private Long codigo;
 
 private String descricao;
 
+@DateTimeFormat(pattern = "dd/MM/yyyy")
 @Temporal(TemporalType.DATE)
 private Date dataVencimento;
 
+@NumberFormat(pattern = "#,##0.00")
 private BigDecimal valor;
 
 @Enumerated(EnumType.STRING)
 private StatusTitulo status;
 
+public boolean isPendente() {
+return StatusTitulo.PENDENTE.equals(this.status);
+}
+
+public boolean isCancelado() {
+return StatusTitulo.CANCELADO.equals(this.status);
+}
 
 public Long getCodigo() {
 	return codigo;

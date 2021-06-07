@@ -44,6 +44,16 @@ public class TituloController {
 			return mv; // pagina que eu quero retornar
 		 }
 	
+	@RequestMapping
+	public ModelAndView pesquisar() {
+		List<Titulo> todosTitulos = titulos.findAll();
+		ModelAndView mv = new ModelAndView("PesquisaTitulos");
+		mv.addObject("titulos", todosTitulos);
+		return mv;
+	}
+	
+	
+	
 	// Esse método retornava só a View
 	//public String salvar(Titulo titulo) {
 	//	System.out.println("--->>> " + titulo.getDescricao());
