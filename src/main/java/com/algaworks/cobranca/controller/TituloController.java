@@ -5,10 +5,12 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Required;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -24,11 +26,13 @@ public class TituloController {
 	
 	@Autowired //Injetando o objeto
 	private Titulos titulos;
+	
+	private static String CADASTRO_VIEW = "CadastroTitulo";
 
 	
 	@RequestMapping("/novo")
 	public ModelAndView novo() {
-		ModelAndView mv = new ModelAndView("CadastroTitulo");
+		ModelAndView mv = new ModelAndView(CADASTRO_VIEW);
 		//StatusTitulo.values() retorna um Array com os elementos do Enum StatusTitulo
 		// mv.addObject("todosStatusTitulo",StatusTitulo.values()); Refatoramos criando uma lista. 
 		// todosStatusTitulo nome do objeto que vai ser interado na viwer
@@ -38,16 +42,47 @@ public class TituloController {
 		return mv;
 	}
 	
+	/*
+	 * @RequestMapping("/principal") public ModelAndView principal() { ModelAndView
+	 * mv = new ModelAndView("Principal"); mv.addObject(new Titulo()); return mv; }
+	 */
+	
+	@RequestMapping("/principal")
+	public ModelAndView pesquisarPrincipal() {
+		List<Titulo> todosTitulos2 = titulos.findAll();
+		ModelAndView mv = new ModelAndView("Principal");
+		mv.addObject("titulos", todosTitulos2);
+		mv.addObject(new Titulo());
+		return mv;
+	}
+	
 	//@RequestMapping(value="/titulos", method = RequestMethod.POST)
 	@RequestMapping(method = RequestMethod.POST)
 	//Novo método que retorna alem da View um atributo de mensagem
 	public String salvar(@Validated Titulo titulo, Errors errors, RedirectAttributes attributes) {
 		if(errors.hasErrors()) {
-			return "CadastroTitulo";
+			return CADASTRO_VIEW;
 		}
+		try {
 			titulos.save(titulo);
 			attributes.addFlashAttribute("mensagem", "Título salvo com sucesso!");
 			return "redirect:/titulos/novo" ; // pagina que eu quero retornar
+		 }catch (DataIntegrityViolationException e) {
+			// TODO: handle exception
+			 errors.rejectValue("dataVencimento", null, "Data inválida");
+			 return CADASTRO_VIEW;
+		}
+	}
+	
+	@RequestMapping(value="/principal", method = RequestMethod.POST)
+	//Novo método que retorna alem da View um atributo de mensagem
+	public String salvarPrincipal(@Validated Titulo titulo, Errors errors, RedirectAttributes attributes) {
+		if(errors.hasErrors()) {
+			return "Principal";
+		}
+			titulos.save(titulo);
+			attributes.addFlashAttribute("mensagem", "Título salvo com sucesso!");
+			return "redirect:/titulos/principal" ; // pagina que eu quero retornar
 		 }
 	
 	@RequestMapping
@@ -58,7 +93,7 @@ public class TituloController {
 		return mv;
 	}
 	
-	
+
 	
 	// Esse método retornava só a View
 	//public String salvar(Titulo titulo) {
@@ -66,6 +101,27 @@ public class TituloController {
 	//	titulos.save(titulo);
 	//	return "CadastroTitulo"; // pagina que eu quero retornar
 	// }
+	
+	
+	
+	
+	@RequestMapping("{codigo}")
+	public ModelAndView edicao(@PathVariable("codigo") Long codigoTitulo) {
+		Titulo titulo = titulos.getOne(codigoTitulo);
+		
+		ModelAndView mv = new ModelAndView(CADASTRO_VIEW); 
+		mv.addObject(titulo);
+		return mv;
+	}
+	
+	@RequestMapping(value="{codigo}", method = RequestMethod.DELETE)
+	public String excluir(@PathVariable Long codigo, RedirectAttributes attributes) {
+		titulos.deleteById(codigo);
+		
+		attributes.addFlashAttribute("mensagem", "Título excluído com sucesso!");
+		return "redirect:/titulos";
+	}
+	
 	
 	@ModelAttribute("todosStatusTitulo")
 	public List<StatusTitulo> todosStatusTitulo(){
